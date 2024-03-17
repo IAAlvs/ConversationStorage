@@ -10,14 +10,13 @@ public class ConversationRepositoryTest : IDisposable
     private readonly IConversationRepository? _repository;
     private IMongoRunner? mongoDbRunner;
     public IMongoClient? _mongoClient;
-    public IConversationRepository? repository;
     private IConfiguration? _configuration;
 
     public ConversationRepositoryTest()
     {
         Console.WriteLine("REPOSITORY CTO===================================");
         Console.WriteLine(_repository);
-                _configuration = new ConfigurationBuilder()
+            _configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.Test.json")
             .AddEnvironmentVariables()
             .Build();
@@ -38,7 +37,7 @@ public class ConversationRepositoryTest : IDisposable
         }
             Console.WriteLine(_configuration.GetConnectionString("MONGO_DB_NAME"));
             _mongoClient = new MongoClient(_configuration.GetConnectionString("MONGO"));
-            repository = new MongoConversationRepository(_mongoClient, _configuration);
+            _repository = new MongoConversationRepository(_mongoClient, _configuration);
             return;   
     }
     public void Dispose()
