@@ -1,0 +1,157 @@
+#Visual Studio build files
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+dlldata.c
+*.ilk
+*.meta
+*.obj
+*.iobj
+*.pch
+*.pdb
+*.ipdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*_wpftmp.csproj
+*.log
+.builds
+*.pidb
+.svclog
+.scc
+_Chutzpah
+.sass-cache/
+[Ee]xpress/
+ClientBin/
+~$
+*~
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+orleans.codegen.cs
+
+#Visual Studio user-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+#Mono-specific files
+mono_crash.*
+
+#Visual Studio 2015/2017 files
+.vs/
+Generated\ Files/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+.VisualState.xml
+TestResult.xml
+nunit-.xml
+
+#Visual Studio code coverage results
+*.coverage
+*.coveragexml
+
+#Microsoft Azure files
+csx/
+*.build.csdef
+ecf/
+rcf/
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+*.appx
+*.appxbundle
+*.appxupload
+PublishScripts/
+
+#ReSharper files
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+#TeamCity files
+_TeamCity*
+
+#DotCover files
+.dotCover
+.axoCover/
+!.axoCover/settings.json
+
+#Guidance Automation Toolkit files
+*.gpState
+
+#NCrunch files
+NCrunch*
+.crunch.local.xml
+nCrunchTemp_*
+
+#MightyMoose files
+.mm.
+AutoTest.Net/
+
+#StyleCop files
+StyleCopReport.xml
+
+#.NET Core files
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*/[Pp]ackages/
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+#TFS files
+$tf/
+
+#Visual C++ files
+ipch/
+*.aps
+*.ncb
+*.opendb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.VC.opendb
+
+#Visual Studio profiler files
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+#Visual Studio trace files
+*.e2e
+
+#Other files
+BenchmarkDotNet.Artifacts/
+StyleCopReport.xml
+#Env
+*.env
+
+#vs code
+.vscode/*
+.vscode
