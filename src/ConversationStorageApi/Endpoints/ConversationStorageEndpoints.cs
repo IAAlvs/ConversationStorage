@@ -56,10 +56,21 @@ public class ConversationStorageEndpoints
         [FromRoute(Name = "clientId")] Guid clientId,
         [FromRoute(Name = "conversationId")] Guid conversationId, PatchConversationDto patchDto)
     {
-        return await conversationService.PatchConversation(clientId, conversationId, patchDto )
-        is { } conversationPatched 
-        ? Results.Ok(conversationPatched)
-        : Results.NotFound();     }
+        try
+        {
+            return await conversationService.PatchConversation(clientId, conversationId, patchDto )
+            is { } conversationPatched 
+            ? Results.Ok(conversationPatched)
+            : Results.NotFound();
+        }
+
+        catch(Exception ex){
+            return ex switch {
+                NullReferenceException e => Results.NotFound(e.Message),
+                Exception => Results.Problem() // Manejar otros tipos de excepción
+            };
+        }
+    }
     [ValidateGuidParameter("clientId")]
     [ValidateGuidParameter("conversationId")]
     private static async Task<IResult> RetrieveConversation(
@@ -84,9 +95,19 @@ public class ConversationStorageEndpoints
         [FromRoute(Name = "clientId")] Guid clientId,
         [FromRoute(Name = "conversationId")] Guid conversationId, AddMessageRequestDto messageDto)
     {
-        return await conversationService.AddMessage(clientId, conversationId, messageDto)
-        is { } conversation 
-        ? Results.Ok(conversation)
-        : Results.NotFound(); 
+        try{
+            return await conversationService.AddMessage(clientId, conversationId, messageDto)
+            is { } conversation 
+            ? Results.Ok(conversation)
+            : Results.NotFound(); 
+        }
+        catch(Exception ex){
+            return ex switch {
+                NullReferenceException e => Results.NotFound(e.Message),
+                Exception => Results.Problem() // Manejar otros tipos de excepción
+        };
+
+        }
+
     }
 }

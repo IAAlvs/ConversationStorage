@@ -7,11 +7,17 @@ using Microsoft.Extensions.Configuration;
 
 public class ConversationRepositoryTest : IClassFixture<ConversationRepositoryConfiguration>
 {
-    private IConversationRepository? _repository;
+    private readonly IConversationRepository? _repository;
+    private IMongoRunner? mongoDbRunner;
+    public IMongoClient? _mongoClient;
+    public IConversationRepository? repository;
+    private IConfiguration? _configuration;
 
     public ConversationRepositoryTest(ConversationRepositoryConfiguration config)
     {
         _repository = config.repository;
+        Console.WriteLine("REPOSITORY CTO===================================");
+        Console.WriteLine(_repository);
     }
 
     [Fact]
@@ -24,6 +30,8 @@ public class ConversationRepositoryTest : IClassFixture<ConversationRepositoryCo
             DateTime.Now, "Telephone", []);
 
         var clientConversation = await _repository!.CreateConversation(clientId, conversation);
+        Console.WriteLine("REPOSITORY TEST===================================");
+        Console.WriteLine(_repository);
 
         Assert.IsType<Conversation>(clientConversation);
     }
@@ -31,33 +39,35 @@ public class ConversationRepositoryTest : IClassFixture<ConversationRepositoryCo
 public class ConversationRepositoryConfiguration : IDisposable
 {
     private IMongoRunner? mongoDbRunner;
-    private IMongoDatabase? _mongoDatabase;
-
     public IMongoClient? _mongoClient;
     public IConversationRepository? repository;
     private IConfiguration? _configuration;
     public ConversationRepositoryConfiguration()
     {
-        _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json").AddEnvironmentVariables().Build();
-        var mongoDbEnv = _configuration["MONGO_DB_ENV"]??throw new NullReferenceException("Expecte mongoDbEnv");
+        _configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.Test.json")
+            .AddEnvironmentVariables()
+            .Build();
+        string? environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");      
         /* TESTING WITH OUT LOCAL DATABASE TO AVOID VERSIONING OF DEPENDENCIES */
-        if (mongoDbEnv != "ci-cd")
-        {
-            _mongoClient = new MongoClient(_configuration.GetConnectionString("MONGO"));
-            repository = new MongoConversationRepository(_mongoClient, _configuration);
+        if(environment == "ci-cd"){
+            var options = new MongoRunnerOptions
+            {
+                UseSingleNodeReplicaSet = true,
+                ConnectionTimeout = TimeSpan.FromSeconds(60),
+                AdditionalArguments = "--quiet",
+                MongoPort = 27017,
+                KillMongoProcessesWhenCurrentProcessExits = true
+            };
+            mongoDbRunner = MongoRunner.Run(options);
+            _mongoClient = new MongoClient(mongoDbRunner.ConnectionString);
             return;
         }
-        /* CI - CD DATABASE CONFIGURATION ONLY UBUNT 20.04 FOR MONGO DEPENDENCY ON MEMORY */
-        var options = new MongoRunnerOptions
-        {
-            UseSingleNodeReplicaSet = true,
-            ConnectionTimeout = TimeSpan.FromSeconds(60),
-            AdditionalArguments = "--quiet",
-            MongoPort = 27017,
-            KillMongoProcessesWhenCurrentProcessExits = true
-        };
-        mongoDbRunner = MongoRunner.Run(options);
-        _mongoClient = new MongoClient(mongoDbRunner.ConnectionString);
+            Console.WriteLine(_configuration.GetConnectionString("MONGO_DB_NAME"));
+            _mongoClient = new MongoClient(_configuration.GetConnectionString("MONGO"));
+            repository = new MongoConversationRepository(_mongoClient, _configuration);
+            return;   
+
 
     }
 
@@ -65,9 +75,8 @@ public class ConversationRepositoryConfiguration : IDisposable
     public void Dispose()
     {
         var mongoDbEnv = _configuration!["MONGO_DB_ENV"];
-        _mongoClient!.DropDatabase(_configuration.GetConnectionString("MONGO_DB_NAME"));
-
         if(mongoDbEnv == "ci-cd"){
+        _mongoClient!.DropDatabase(_configuration.GetConnectionString("MONGO_DB_NAME"));
         _mongoClient = null;
         mongoDbRunner!.Dispose();
         }

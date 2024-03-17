@@ -1,4 +1,4 @@
-name: Dotnet 7 Web API Unit Tests
+name: Dotnet 8 Conversation API Unit Tests
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
 
     - name: Run unit tests
       run: |
-        export MONGO_DB_ENV="ci-cd" &&
+        export ASPNETCORE_ENVIRONMENT="test" &&
         dotnet test
 
 

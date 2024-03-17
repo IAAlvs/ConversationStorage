@@ -25,10 +25,13 @@ public class ConversationService(IConversationRepository repository) : IConversa
         return conversation.ToDto();
     }
 
-    public async Task<ConversationDto> PatchConversation(Guid clientId,Guid conversationId, PatchConversationDto dto)
+    public async Task<ConversationDto?> PatchConversation(Guid clientId,Guid conversationId, PatchConversationDto dto)
     {
         var conversation = await _repository.PatchConversation(clientId, conversationId, dto);
-        return conversation.ToDto();
+        return conversation switch{
+            null => throw new NullReferenceException($"Not found conversation with id {conversationId} to update"),
+            _ => conversation.ToDto()
+        } ;
     }
 
     public async Task<ConversationDto?> RetrieveConversation(Guid clientId, Guid conversationId)
