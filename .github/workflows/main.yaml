@@ -28,7 +28,7 @@ jobs:
 
     - name: Run unit tests
       run: |
-        export ASPNETCORE_ENVIRONMENT="test" &&
+        export ASPNETCORE_ENVIRONMENT="ci-cd" &&
         dotnet test
 
 
