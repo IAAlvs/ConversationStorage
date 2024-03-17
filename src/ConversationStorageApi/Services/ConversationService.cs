@@ -14,14 +14,15 @@ public class ConversationService(IConversationRepository repository) : IConversa
         return conversation switch
         {
             null => throw new NullReferenceException($"Not found conversation with id {conversationId} to add message"),
-            _ => conversation
+            _ => conversation.ToDto()
         };
     }
 
     public async Task<ConversationDto> CreateConversation(Guid clientId, CreateConversationDto dto)
     {
         var conversation = Conversation.FromDto(dto);
-        return await _repository.CreateConversation(clientId, conversation);
+        await _repository.CreateConversation(clientId, conversation);
+        return conversation.ToDto();
     }
 
     public async Task<ConversationDto> PatchConversation(Guid clientId,Guid conversationId, PatchConversationDto dto)

@@ -3,9 +3,9 @@ using ConversationStorage.Models;
 
 namespace ConversationStorage.Interfaces;
 public interface IConversationRepository{
-    Task<ConversationDto> CreateConversation(Guid clientId, Conversation conversation);
+    Task<Conversation> CreateConversation(Guid clientId, Conversation conversation);
 
-    Task<MessagesDto?> AddMessage(Guid clientId, Guid conversationId, Message message);
+    Task<Message?> AddMessage(Guid clientId, Guid conversationId, Message message);
     Task<Conversation> PatchConversation(Guid clientId, Guid conversationId, PatchConversationDto PatchConversationDto);
     Task<Conversation?> GetConversation(Guid clientId, Guid conversationId);
 }

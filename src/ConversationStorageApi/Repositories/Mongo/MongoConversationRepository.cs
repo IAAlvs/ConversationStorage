@@ -17,7 +17,7 @@ public class MongoConversationRepository : IConversationRepository{
         var database = _mongoClient!.GetDatabase(_config.GetConnectionString("MONGO_DB_NAME"));
         _conversations = database.GetCollection<ClientConversation>("conversations");
     }
-    public async Task<MessagesDto?> AddMessage(Guid clientId, Guid conversationId, Message message)
+    public async Task<Message?> AddMessage(Guid clientId, Guid conversationId, Message message)
     {
         var filter = 
         Builders<ClientConversation>.Filter.Eq(c => c.Id, clientId) &
@@ -31,9 +31,9 @@ public class MongoConversationRepository : IConversationRepository{
         await _conversations.UpdateOneAsync(filter, update);
 
         //var update = Builders<Conversation>.Update.Push("messages", message);
-        return message.ToDto();
+        return message;
     }
-    public async Task<ConversationDto> CreateConversation(Guid clientId, Conversation conversation)
+    public async Task<Conversation> CreateConversation(Guid clientId, Conversation conversation)
     {
         var filter = Builders<ClientConversation>.Filter.Eq(x => x.Id, clientId);
         var update = Builders<ClientConversation>.Update.Push(x => x.Conversations, conversation);
@@ -44,7 +44,7 @@ public class MongoConversationRepository : IConversationRepository{
             ReturnDocument = ReturnDocument.After
         };    
         var clientConversation = await _conversations.FindOneAndUpdateAsync(filter, update, options);
-        return conversation.ToDto();
+        return conversation;
     }
     /* 
         public async Task<ConversationDto> CreateConversation(Guid clientId, Conversation conversation)
