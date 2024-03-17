@@ -39,9 +39,7 @@ public class ConversationRepositoryConfiguration : IDisposable
 
         var options = new MongoRunnerOptions{
             UseSingleNodeReplicaSet = true, // Default: false
-            StandardOuputLogger = line => Console.WriteLine(line), // Default: null
-            StandardErrorLogger = line => Console.WriteLine(line),
-            ConnectionTimeout = TimeSpan.FromSeconds(300),
+            ConnectionTimeout = TimeSpan.FromSeconds(30),
             AdditionalArguments = "--quiet",
             MongoPort = 27017,
             KillMongoProcessesWhenCurrentProcessExits = true
