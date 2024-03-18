@@ -10,11 +10,14 @@ public class ConversationService(IConversationRepository repository) : IConversa
     public async Task<MessagesDto> AddMessage(Guid clientId, Guid conversationId, AddMessageRequestDto dto)
     {
         var message = Message.FromDto(dto);
-        var conversation = await _repository.AddMessage(clientId, conversationId, message);
-        return conversation switch
+        var conversation = await _repository.AddMessage(clientId, conversationId, message)??
+            throw new NullReferenceException($"Not found conversation with id {conversationId} to add message");
+        var cdto = new PatchConversationDto(dto.Status, null);
+        var updateConversation = await _repository.PatchConversation(clientId, conversationId, cdto);
+        return updateConversation switch
         {
-            null => throw new NullReferenceException($"Not found conversation with id {conversationId} to add message"),
-            _ => conversation.ToDto()
+            null => throw  new NullReferenceException($"Could not update {conversationId} state after adding message") ,
+            _ => conversation!.ToDto()
         };
     }
 

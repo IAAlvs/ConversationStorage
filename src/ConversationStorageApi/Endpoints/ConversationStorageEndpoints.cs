@@ -2,6 +2,8 @@ using ConversationStorage.Dtos;
 using ConversationStorage.Interfaces;
 using ConversationStorage.Repositories;
 using ConversationStorage.Services;
+using ConversationStorage.Validators;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 
@@ -13,7 +15,6 @@ public class ConversationStorageEndpoints
     public static void DefineServices(IServiceCollection services)
     {
         var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").AddEnvironmentVariables().Build();
-
         services.AddScoped<IMongoClient, MongoClient>(_ => new MongoClient(config.GetConnectionString("MONGO")));
         services.AddScoped<IConversationRepository, MongoConversationRepository>();
         services.AddScoped<IConversationService, ConversationService>();
@@ -26,9 +27,6 @@ public class ConversationStorageEndpoints
         //Add a message to conversation
         app.MapPost("/api/"+ API_VERSION+"/{clientId}/messages/{conversationId}", AddMessage)  
             .WithName("Adds a message to a conversation");
-        //List conversation messages
-/*         app.MapGet("/api/"+ API_VERSION+"/{clientId}/messages/{conversationId}", ListMessages)  
-            .WithName("Get all messages ordered based on conversation"); */
         app.MapGet("/api/"+ API_VERSION+"/{clientId}/messages/{conversationId}", RetrieveConversation)  
             .WithName("Get conversation and all their messages");
         app.MapPatch("/api/"+ API_VERSION+"/{clientId}/conversations/{conversationId}", PatchConversation).
@@ -39,8 +37,12 @@ public class ConversationStorageEndpoints
     private static async Task<IResult> CreateConversation(
         [FromRoute(Name = "clientId")] Guid clientId,
         IConversationService conversationService, 
-        CreateConversationDto createConversationDto)
+        CreateConversationDto createConversationDto,
+        IValidator<CreateConversationDto> _validator)
     {
+        var validate = _validator.Validate(createConversationDto);
+        if(!validate.IsValid)
+            return Results.BadRequest(validate.Errors);
         return await conversationService.CreateConversation(clientId, createConversationDto)
         is { } conversation 
         ? Results.Ok(conversation)
@@ -54,10 +56,15 @@ public class ConversationStorageEndpoints
     private static async Task<IResult> PatchConversation(
         IConversationService conversationService,
         [FromRoute(Name = "clientId")] Guid clientId,
-        [FromRoute(Name = "conversationId")] Guid conversationId, PatchConversationDto patchDto)
+        [FromRoute(Name = "conversationId")] Guid conversationId, 
+        PatchConversationDto patchDto,
+        IValidator<PatchConversationDto> _validator)
     {
         try
         {
+            var validate = _validator.Validate(patchDto);
+            if(!validate.IsValid)
+                return Results.BadRequest(validate.Errors);
             return await conversationService.PatchConversation(clientId, conversationId, patchDto )
             is { } conversationPatched 
             ? Results.Ok(conversationPatched)
@@ -93,9 +100,16 @@ public class ConversationStorageEndpoints
     private static async Task<IResult> AddMessage(
         IConversationService conversationService,
         [FromRoute(Name = "clientId")] Guid clientId,
-        [FromRoute(Name = "conversationId")] Guid conversationId, AddMessageRequestDto messageDto)
+        [FromRoute(Name = "conversationId")] Guid conversationId, 
+        AddMessageRequestDto messageDto,
+        
+        IValidator<AddMessageRequestDto> validator)
     {
         try{
+            var validate = validator.Validate(messageDto);
+
+            if(!validate.IsValid)
+                return Results.BadRequest(validate.Errors);
             return await conversationService.AddMessage(clientId, conversationId, messageDto)
             is { } conversation 
             ? Results.Ok(conversation)

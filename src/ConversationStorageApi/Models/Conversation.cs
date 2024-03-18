@@ -18,10 +18,7 @@ public enum MessageType{
     MachineRequest,
     MachineResponse
 }
-public class MessageMetadata(Guid fileVoiceId)
-{
-    public Guid FileVoiceId { get; } = fileVoiceId;
-};
+public record MessageMetadata(Guid FileVoiceId, string? AditionalParams);
 
 public class Message(Guid id, MessageType type, DateTime timestamp, ConversationStatus status, string text, MessageMetadata?  metadata)
 {
@@ -30,7 +27,7 @@ public class Message(Guid id, MessageType type, DateTime timestamp, Conversation
     public Guid Id { get;set; } = id;
     public MessageType Type { get;set; } = type;
     public ConversationStatus StatusInConversation { get;set; } = status;
-
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
     public DateTime Timestamp { get;set; } = timestamp;
     public String Text { get;set; } = text;
     [BsonIgnoreIfNull]
@@ -53,6 +50,8 @@ public class Conversation(Guid id, ConversationStatus status, DateTime dateInit,
     [BsonId]
    //[BsonGuidRepresentation(GuidRepresentation.Standard)]
     public Guid Id { get;  } = id;
+    [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
+
     public DateTime DateInit { get; } = dateInit;
     public ConversationStatus Status { get; } = status;
     /* Originally empty */
@@ -61,7 +60,7 @@ public class Conversation(Guid id, ConversationStatus status, DateTime dateInit,
     public List<Message> Messages { get; } = messages?? [];
     public static Conversation FromDto(CreateConversationDto conversationDto){
         var origin = conversationDto.Origin;
-        return new(Guid.NewGuid(), ConversationStatus.Started, DateTime.Now, origin, []);
+        return new(Guid.NewGuid(), ConversationStatus.Started, DateTime.UtcNow, origin, []);
     }
     public ConversationDto ToDto() => new (Id, Status.ToString(), Origin, Messages.Select(m => m.ToDto()).ToList());
 }
