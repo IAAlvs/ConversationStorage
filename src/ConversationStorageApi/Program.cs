@@ -1,14 +1,10 @@
 using ConversationStorage.Endpoints;
 using Serilog;
 using ConversationStorage.AspectDefinitions;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Bson;
-
+using ConversationStorage.Middlewares;
 
 internal partial class Program{ 
     private static void Main(string[] args){
-        BsonSerializer.RegisterSerializer(new GuidSerializer(BsonType.String));
 
 
         Log.Logger = new LoggerConfiguration()
@@ -24,8 +20,10 @@ internal partial class Program{
             ConversationStorageEndpoints.DefineServices(builder.Services);
             
             var app = builder.Build();
-
+            
             SerilogAspectDefinition.ConfigureAspect(app);
+            app.UseValidateGuidParameter();
+            app.UseJsonExceptionHandler();
             SwaggerEndpointDefinition.DefineEndpoints(app);
             ConversationStorageEndpoints.DefineEndpoints(app);
 
