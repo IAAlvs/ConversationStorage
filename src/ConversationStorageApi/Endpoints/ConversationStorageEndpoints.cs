@@ -2,12 +2,12 @@ using ConversationStorage.Dtos;
 using ConversationStorage.Interfaces;
 using ConversationStorage.Repositories;
 using ConversationStorage.Services;
-using ConversationStorage.Validators;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 
 namespace ConversationStorage.Endpoints;
+
 public class ConversationStorageEndpoints
 {
     public const string API_VERSION = "v1";
@@ -22,18 +22,16 @@ public class ConversationStorageEndpoints
     public static void DefineEndpoints(IEndpointRouteBuilder app)
     {
         //Create conversation 
-        app.MapPost("/api/"+ API_VERSION+"/conversations/{clientId}", CreateConversation)  
+        app.MapPost("/api/"+ API_VERSION+"/{clientId}/conversations", CreateConversation)  
             .WithName("Created a  conversation");
         //Add a message to conversation
-        app.MapPost("/api/"+ API_VERSION+"/{clientId}/messages/{conversationId}", AddMessage)  
+        app.MapPost("/api/"+ API_VERSION+"/{clientId}/conversations/{conversationId}/messages", AddMessage)  
             .WithName("Adds a message to a conversation");
-        app.MapGet("/api/"+ API_VERSION+"/{clientId}/messages/{conversationId}", RetrieveConversation)  
+        app.MapGet("/api/"+ API_VERSION+"/{clientId}/conversations/{conversationId}/messages", RetrieveConversation)  
             .WithName("Get conversation and all their messages");
         app.MapPatch("/api/"+ API_VERSION+"/{clientId}/conversations/{conversationId}", PatchConversation).
             WithName("Updates conversation status and other features"); 
     }
-    [ValidateGuidParameter("clientId")]
-
     private static async Task<IResult> CreateConversation(
         [FromRoute(Name = "clientId")] Guid clientId,
         IConversationService conversationService, 
@@ -48,10 +46,6 @@ public class ConversationStorageEndpoints
         ? Results.Ok(conversation)
         : Results.NotFound(); 
     }
-
-    [ValidateGuidParameter("clientId")]
-    [ValidateGuidParameter("conversationId")]
-
 
     private static async Task<IResult> PatchConversation(
         IConversationService conversationService,
@@ -68,18 +62,16 @@ public class ConversationStorageEndpoints
             return await conversationService.PatchConversation(clientId, conversationId, patchDto )
             is { } conversationPatched 
             ? Results.Ok(conversationPatched)
-            : Results.NotFound();
+            : Results.NotFound(new ErrorMessageResponse(null!,"client or conversation were not found", null!));
         }
 
         catch(Exception ex){
             return ex switch {
-                NullReferenceException e => Results.NotFound(e.Message),
-                Exception => Results.Problem() // Manejar otros tipos de excepción
+                NullReferenceException e => Results.NotFound(),
+                Exception => Results.Problem() 
             };
         }
     }
-    [ValidateGuidParameter("clientId")]
-    [ValidateGuidParameter("conversationId")]
     private static async Task<IResult> RetrieveConversation(
         IConversationService conversationService,
         [FromRoute(Name = "clientId")] Guid clientId,
@@ -89,13 +81,6 @@ public class ConversationStorageEndpoints
         is { } conversation 
         ? Results.Ok(conversation)
         : Results.NotFound();     }
-
-/*     private static async Task<IResult> ListMessages(HttpContext context)
-    {
-        throw new NotImplementedException();
-    } */
-    [ValidateGuidParameter("clientId")]
-    [ValidateGuidParameter("conversationId")]
 
     private static async Task<IResult> AddMessage(
         IConversationService conversationService,
@@ -113,7 +98,7 @@ public class ConversationStorageEndpoints
             return await conversationService.AddMessage(clientId, conversationId, messageDto)
             is { } conversation 
             ? Results.Ok(conversation)
-            : Results.NotFound(); 
+            : Results.NotFound(new ErrorMessageResponse(null!,"client or conversation were not found to add message", null!)); 
         }
         catch(Exception ex){
             return ex switch {
